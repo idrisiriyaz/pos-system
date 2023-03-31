@@ -34,15 +34,21 @@ app.use(express.static('public'));
 app.use(bodyParser.json());
 
 // API endpoint to get an image
+app.get('/', (req, res) => {
+    res.json({
+        "env": "",
+        "status": "API working!"
+    });
+});
 app.get('/images/:filename', (req, res) => {
     const filename = req.params.filename;
     res.sendFile(`public/images/${filename}`, { root: __dirname });
 });
 // Upload an image to the server and save its details to the database
-app.post('/upload/:id', (req, res) => {
-    const userId = req.params.id;
-    const sql = 'SELECT * FROM product WHERE id = ?';
-    connection.query(sql, userId, (err, result) => {
+app.post('/upload/:productId', (req, res) => {
+    const productId = req.params.productId;
+    const sql = 'SELECT * FROM product WHERE productId = ?';
+    connection.query(sql, productId, (err, result) => {
 
         if (err) {
             res.status(500).send({ message: err.message });
@@ -57,14 +63,14 @@ app.post('/upload/:id', (req, res) => {
                         const image = req.file.filename;
 
                         // Save the image details to the database
-                        const sql = 'UPDATE product SET ? WHERE id = ?';
-                        connection.query(sql, [{ "imageName": image }, userId], (err, result) => {
+                        const sql = 'UPDATE product SET ? WHERE productId = ?';
+                        connection.query(sql, [{ "imageName": image }, productId], (err, result) => {
                             if (err) {
                                 res.status(500).send({ message: err.message });
                             } else if (result.affectedRows === 0) {
                                 res.status(404).send({ message: 'Product not found' });
                             } else {
-                                res.send({ message: 'Image uploaded successfully' });
+                                res.send({ imageName: image, message: 'Image uploaded successfully' });
                             }
                         });
                     }
@@ -101,8 +107,8 @@ app.get('/product', (req, res) => {
 });
 
 // GET single product by ID
-app.get('/product/:id', (req, res) => {
-    connection.query('SELECT * FROM product WHERE id = ?', [req.params.id], (err, results) => {
+app.get('/product/:productId', (req, res) => {
+    connection.query('SELECT * FROM product WHERE productId = ?', [req.params.productId], (err, results) => {
         if (err) {
             res.status(500).send({ message: err.message });
         } else if (results.length === 0) {
@@ -119,14 +125,14 @@ app.post('/product', (req, res) => {
         if (err) {
             res.status(500).send({ message: err.message });
         } else {
-            res.send({ id: result.insertId, message: 'Product insert successfully' });
+            res.send({ productId: result.insertId, message: 'Product insert successfully' });
         }
     });
 });
 
 // PUT update product by ID
-app.put('/product/:id', (req, res) => {
-    connection.query('UPDATE product SET ? WHERE id = ?', [req.body, req.params.id], (err, result) => {
+app.put('/product/:productId', (req, res) => {
+    connection.query('UPDATE product SET ? WHERE productId = ?', [req.body, req.params.productId], (err, result) => {
         if (err) {
             res.status(500).send({ message: err.message });
         } else if (result.affectedRows === 0) {
@@ -138,8 +144,8 @@ app.put('/product/:id', (req, res) => {
 });
 
 // DELETE product by ID
-app.delete('/product/:id', (req, res) => {
-    connection.query('DELETE FROM product WHERE id = ?', [req.params.id], (err, result) => {
+app.delete('/product/:productId', (req, res) => {
+    connection.query('DELETE FROM product WHERE productId = ?', [req.params.productId], (err, result) => {
         if (err) {
             res.status(500).send({ message: err.message });
         } else if (result.affectedRows === 0) {
@@ -152,5 +158,5 @@ app.delete('/product/:id', (req, res) => {
 
 // Start server
 app.listen(3000, () => {
-    console.log('Server started on port 3000');
+    console.log('Server started on port http://localhost:3000');
 });
