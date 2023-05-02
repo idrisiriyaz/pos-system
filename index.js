@@ -105,6 +105,15 @@ app.get('/product', (req, res) => {
         }
     });
 });
+app.get('/user', (req, res) => {
+    connection.query('SELECT * FROM user', (err, results) => {
+        if (err) {
+            res.status(500).send({ message: err.message });
+        } else {
+            res.send(results);
+        }
+    });
+});
 
 // GET single product by ID
 app.get('/product/:productId', (req, res) => {
